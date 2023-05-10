@@ -1,17 +1,15 @@
 from datetime import datetime
 
 from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
-
-from flask_admin import Admin, BaseView, expose, AdminIndexView
+from flask_admin import Admin, AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
+from flask_sqlalchemy import SQLAlchemy
 from mimesis import Person, Text
 
 app = Flask(__name__)
 app.config['FLASK_ENV'] = 'development'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SECRET_KEY'] = 'anykey'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
@@ -84,7 +82,8 @@ class DashBoardView(AdminIndexView):
             if not len(User.query.all()) >= 10:
                 user = User(username=person.full_name(), email=person.email(), password=person.password())
                 db.session.add(user)
-                db.session.commit()
+                # используем flush() чтобы получить id пользователя
+                db.session.flush()
 
                 post = Post(title=text.title(), content=text.text(quantity=5))
                 post.user_id = user.id
